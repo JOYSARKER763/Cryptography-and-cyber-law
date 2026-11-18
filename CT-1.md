@@ -1,15 +1,18 @@
-Contents OverviewOverview and MotivationCore ObjectivesComputational SetupElementary Integer PropertiesPrimes and Prime DecompositionGCD and the Euclidean MethodArithmetic in Modular SystemsLinear Congruences and Multiplicative InversesFermat's and Euler's Classical TheoremsThe Chinese Remainder Theorem (CRT)Principles of Modern CryptographyThe RSA CryptosystemInteractive Python Lab ExperimentsStep-by-Step Solved ProblemsPractical Security ConsiderationsSummary of Acquired Skills1. Overview and MotivationNumber theory focuses on the structure and behavior of whole numbers. Topics like divisibility rules, prime distribution, common divisors, and remainder arithmetic form the theoretical backbone of this field. While historically viewed as pure mathematics, these concepts now power the security infrastructure of the modern internet.Cryptography applies mathematical hardness to protect digital data—ensuring privacy, data integrity, and sender verification. Unlike traditional secret-key methods, asymmetric (public-key) cryptography relies on a mathematically linked key pair: one key shared openly for encryption, and a matching secret key kept private for decryption.This report bridges theory and implementation by translating foundational number-theoretic theorems into clean Python scripts supported by verifiable numerical tests.Reference Material: Adapted from the Number Theory and Cryptography Workshop — mnp-club.Note: This documentation serves as an independent study compilation. Course-specific tasks should be cross-referenced with official class materials.2. Core ObjectivesUpon reviewing and executing the code modules in this study, one will be able to:Define integer divisibility, primality, unique factorization, and modular equivalence.Code both the standard and extended versions of the Euclidean Algorithm from scratch.Compute fast modular exponentiation and find modular multiplicative inverses.Apply Fermat's Little Theorem, Euler's Totient Theorem, and the Chinese Remainder Theorem to solve congruence systems.Contrast symmetric encryption with asymmetric public-key architectures.Execute a complete end-to-end RSA key generation, encryption, and decryption cycle in Python.3. Computational SetupAll scripts are written in standard Python 3 and require no external cryptographic packages. They can be executed locally via Jupyter or directly in the cloud using Google Colab.Local Environment Setup:python3 --version
+🔐 CT # 1: Practicing Number Theory & Public-Key CryptographySubmitted By: Joy Sarker  |  Student ID: IT23022Course: Cryptography and Cyber Law  |  Assignment: Class Test # 1An analytical and computational exploration of elementary integer properties, modular arithmetic, classical number-theoretic theorems, and end-to-end RSA public-key encryption implemented in Python.📑 Table of ContentsOverview and MotivationCore ObjectivesComputational SetupElementary Integer Properties & DivisibilityPrime Numbers & Prime FactorizationGCD & The Extended Euclidean AlgorithmArithmetic in Modular SystemsLinear Congruences & Modular Multiplicative InversesFermat's Little Theorem & Euler's Totient TheoremThe Chinese Remainder Theorem (CRT)Symmetric vs. Asymmetric Cryptography ArchitectureThe RSA Cryptosystem (Theory & Diagram)Complete End-to-End Python ImplementationStep-by-Step Solved Numerical ProblemsPractical Security ConsiderationsReferences & Summary1. Overview and MotivationNumber theory studies the intrinsic properties of integers—such as divisibility, prime distribution, common divisors, and modular congruences. Historically regarded as pure mathematics, number theory now serves as the cryptographic foundation of modern digital security, securing everything from HTTPS web traffic to digital signatures and blockchain networks.Primary Reference: Adapted and practiced from the Number Theory and Cryptography Workshop — mnp-club.2. Core ObjectivesEstablish formal definitions of divisibility, primality, unique factorization, and modular congruence.Implement the Euclidean and Extended Euclidean algorithms from scratch in Python.Compute Fast Modular Exponentiation ($a^b \bmod n$) in logarithmic time $O(\log b)$.Solve linear congruences and compute Modular Multiplicative Inverses.Apply Fermat's Little Theorem, Euler's Totient Theorem, and the Chinese Remainder Theorem (CRT).Build and verify a complete RSA Key Generation, Encryption, and Decryption pipeline.3. Computational SetupAll experiments were practiced and verified using Google Colab and local Jupyter Notebook environments using standard Python 3 libraries (math, random).# Verify Python environment and launch Jupyter
+python3 --version
 pip install notebook matplotlib
 jupyter notebook
-4. Elementary Integer PropertiesAn integer $a$ divides another integer $b$ (written $a \mid b$) if there exists an integer $k$ such that $b = a \cdot k$. By the Division Algorithm, for any integer $a$ and positive integer $n$, there exist unique integers $q$ (quotient) and $r$ (remainder) such that:$$a = q \cdot n + r, \quad 0 \le r < n$$def division_algorithm(a: int, n: int):
+4. Elementary Integer Properties & DivisibilityMathematical FormulationAn integer $a$ divides an integer $b$ (denoted $a \mid b$) if there exists an integer $k$ such that $b = a \cdot k$. According to the Division Algorithm, for any integer $a$ and positive divisor $n > 0$, there exist unique integers $q$ (quotient) and $r$ (remainder) satisfying:$$a = q \cdot n + r, \quad \text{where } 0 \le r < n$$Python Implementationdef division_algorithm(a: int, n: int) -> tuple[int, int]:
+    """Computes unique quotient q and remainder r such that a = q*n + r."""
     if n <= 0:
-        raise ValueError("Divisor n must be positive.")
+        raise ValueError("Divisor n must be a positive integer.")
     q, r = divmod(a, n)
     return q, r
 
-print(division_algorithm(47, 5))   # Output: (9, 2)
-print(division_algorithm(-17, 5))  # Output: (-4, 3)
-5. Primes and Prime DecompositionA prime number is an integer $p > 1$ whose only positive divisors are $1$ and $p$. According to the Fundamental Theorem of Arithmetic, every integer $n > 1$ can be uniquely represented as a product of prime powers:$$n = p_1^{e_1} p_2^{e_2} \cdots p_k^{e_k}$$def prime_factorization(n: int) -> dict:
+print("47 divided by 5  ->", division_algorithm(47, 5))   # Output: (9, 2)
+print("-17 divided by 5 ->", division_algorithm(-17, 5))  # Output: (-4, 3)
+5. Prime Numbers & Prime FactorizationMathematical FormulationAn integer $p > 1$ is prime if its only positive divisors are $1$ and $p$. By the Fundamental Theorem of Arithmetic, every integer $n > 1$ admits a unique prime factorization:$$n = p_1^{e_1} \cdot p_2^{e_2} \cdots p_k^{e_k} = \prod_{i=1}^{k} p_i^{e_i}$$Python Implementation (Trial Division & Sieve of Eratosthenes)def prime_factorization(n: int) -> dict[int, int]:
+    """Returns the prime factorization of n as {prime: exponent}."""
     factors = {}
     d = 2
     while d * d <= n:
@@ -21,38 +24,68 @@ print(division_algorithm(-17, 5))  # Output: (-4, 3)
         factors[n] = factors.get(n, 0) + 1
     return factors
 
+def sieve_of_eratosthenes(limit: int) -> list[int]:
+    """Generates all prime numbers up to a given limit."""
+    is_prime = [True] * (limit + 1)
+    is_prime[0:2] = [False, False]
+    for p in range(2, int(limit**0.5) + 1):
+        if is_prime[p]:
+            for multiple in range(p * p, limit + 1, p):
+                is_prime[multiple] = False
+    return [num for num, prime in enumerate(is_prime) if prime]
+
 print("Prime factors of 360:", prime_factorization(360))
-# Output: {2: 3, 3: 2, 5: 1}
-6. GCD and the Euclidean MethodThe Greatest Common Divisor (GCD) of two integers $a$ and $b$, denoted $\gcd(a, b)$, is the largest positive integer dividing both. If $\gcd(a, b) = 1$, they are coprime.The Extended Euclidean Algorithm also finds integers $x$ and $y$ satisfying Bézout's identity: $ax + by = \gcd(a, b)$.def extended_gcd(a: int, b: int):
+print("Primes up to 30:", sieve_of_eratosthenes(30))
+6. GCD & The Extended Euclidean AlgorithmMathematical FormulationThe Greatest Common Divisor $\gcd(a, b)$ is the largest positive integer dividing both $a$ and $b$. Two numbers are coprime if $\gcd(a, b) = 1$.By Bézout's Identity, there exist integers $x$ and $y$ such that:$$ax + by = \gcd(a, b)$$Python Implementationdef gcd(a: int, b: int) -> int:
+    """Standard Euclidean Algorithm."""
+    while b != 0:
+        a, b = b, a % b
+    return abs(a)
+
+def extended_gcd(a: int, b: int) -> tuple[int, int, int]:
+    """Returns (g, x, y) such that a*x + b*y = g = gcd(a, b)."""
     if b == 0:
         return a, 1, 0
-    gcd, x1, y1 = extended_gcd(b, a % b)
+    g, x1, y1 = extended_gcd(b, a % b)
     x = y1
     y = x1 - (a // b) * y1
-    return gcd, x, y
+    return g, x, y
 
 g, x, y = extended_gcd(56, 15)
-print(f"GCD: {g}, x: {x}, y: {y}")  # 56(-4) + 15(15) = 1
-7. Arithmetic in Modular SystemsTwo integers $a$ and $b$ are congruent modulo $n$, written $a \equiv b \pmod n$, if $n \mid (a - b)$. Modular arithmetic preserves addition, subtraction, and multiplication, enabling Fast Modular Exponentiation ($a^b \bmod n$) in $O(\log b)$ time.def mod_exp(base: int, exp: int, mod: int) -> int:
+print(f"gcd(56, 15) = {g} | Bezout: 56({x}) + 15({y}) = {56*x + 15*y}")
+7. Arithmetic in Modular SystemsConcept & Clock Arithmetic VisualizationTwo integers $a$ and $b$ are congruent modulo $n$, written $a \equiv b \pmod n$, if $n \mid (a - b)$. Modular arithmetic wraps integers around a cycle of size $n$:          0 (mod 5)
+       4             1
+         \         /
+          [ MOD 5 ]
+         /         \
+       3             2
+   Example: 17 ≡ 2 (mod 5)
+Fast Modular Exponentiation (Binary Exponentiation)Computing $a^b \bmod n$ naively is infeasible for cryptographic exponents. Repeated squaring reduces time complexity to $O(\log b)$:def mod_exp(base: int, exp: int, mod: int) -> int:
+    """Computes (base^exp) % mod efficiently in O(log exp) time."""
     result = 1
     base %= mod
     while exp > 0:
-        if exp % 2 == 1:
+        if exp & 1:
             result = (result * base) % mod
-        exp //= 2
+        exp >>= 1
         base = (base * base) % mod
     return result
 
 print("7^256 mod 13 =", mod_exp(7, 256, 13))  # Output: 9
-8. Linear Congruences and Multiplicative InversesA linear congruence $ax \equiv b \pmod n$ has a solution if and only if $d = \gcd(a, n)$ divides $b$. When $\gcd(a, n) = 1$, $a$ has a unique modular multiplicative inverse $a^{-1} \bmod n$ such that $a \cdot a^{-1} \equiv 1 \pmod n$.def mod_inverse(a: int, n: int) -> int:
+8. Linear Congruences & Modular Multiplicative InversesMathematical FormulationA linear congruence $ax \equiv b \pmod n$ has solutions if and only if $d = \gcd(a, n)$ divides $b$. When $\gcd(a, n) = 1$, there exists a unique modular multiplicative inverse $a^{-1} \bmod n$ satisfying:$$a \cdot a^{-1} \equiv 1 \pmod n$$Python Implementationdef mod_inverse(a: int, n: int) -> int:
+    """Computes the modular inverse of a modulo n using Extended GCD."""
     g, x, _ = extended_gcd(a, n)
     if g != 1:
-        raise ValueError(f"Inverse does not exist since gcd({a}, {n}) != 1")
+        raise ValueError(f"Modular inverse does not exist because gcd({a}, {n}) = {g} != 1")
     return x % n
 
 inv = mod_inverse(3, 11)
-print(f"Inverse of 3 mod 11 is {inv} (Check: {(3 * inv) % 11})")
-9. Fermat's and Euler's Classical TheoremsFermat's Little Theorem: If $p$ is prime and $p \nmid a$, then $a^{p-1} \equiv 1 \pmod p$.Euler's Totient Function $\phi(n)$: Counts integers in $[1, n]$ coprime to $n$. For $n = p \cdot q$ (distinct primes), $\phi(n) = (p-1)(q-1)$.Euler's Theorem: If $\gcd(a, n) = 1$, then $a^{\phi(n)} \equiv 1 \pmod n$.def euler_totient(n: int) -> int:
+print(f"Inverse of 3 mod 11 = {inv} | Verification: (3 * {inv}) % 11 = {(3 * inv) % 11}")
+9. Fermat's Little Theorem & Euler's Totient TheoremTheorems & EquationsFermat's Little Theorem: If $p$ is prime and $p \nmid a$, then:
+$$a^{p-1} \equiv 1 \pmod p$$Euler's Totient Function $\phi(n)$: Counts positive integers $\le n$ coprime to $n$. For $n = p \cdot q$ (distinct primes):
+$$\phi(n) = (p - 1)(q - 1)$$Euler's Theorem: If $\gcd(a, n) = 1$, then:
+$$a^{\phi(n)} \equiv 1 \pmod n$$Python Implementationdef euler_totient(n: int) -> int:
+    """Computes Euler's Totient Function phi(n)."""
     result = n
     p = 2
     temp = n
@@ -67,10 +100,13 @@ print(f"Inverse of 3 mod 11 is {inv} (Check: {(3 * inv) % 11})")
     return result
 
 print("phi(35) =", euler_totient(35))  # Output: 24
-10. The Chinese Remainder Theorem (CRT)Given pairwise coprime moduli $n_1, n_2, \dots, n_k$, the system of congruences $x \equiv a_i \pmod{n_i}$ has a unique solution modulo $N = n_1 n_2 \cdots n_k$:$$x = \sum_{i=1}^{k} a_i N_i y_i \pmod N, \quad \text{where } N_i = \frac{N}{n_i} \text{ and } N_i y_i \equiv 1 \pmod{n_i}$$def chinese_remainder_theorem(remainders: list, moduli: list) -> int:
+print("Euler's Theorem Check (3^24 mod 35):", mod_exp(3, euler_totient(35), 35))  # Output: 1
+10. The Chinese Remainder Theorem (CRT)Mathematical FormulationLet $n_1, n_2, \dots, n_k$ be pairwise coprime positive integers and $N = \prod_{i=1}^k n_i$. The system of simultaneous congruences:$$x \equiv a_i \pmod{n_i}, \quad i = 1, 2, \dots, k$$has a unique solution modulo $N$ given by:$$x \equiv \sum_{i=1}^{k} a_i N_i y_i \pmod N, \quad \text{where } N_i = \frac{N}{n_i} \text{ and } N_i y_i \equiv 1 \pmod{n_i}$$Python Implementationdef chinese_remainder_theorem(remainders: list[int], moduli: list[int]) -> int:
+    """Solves a system of simultaneous linear congruences using CRT."""
     N = 1
     for m in moduli:
         N *= m
+    
     total = 0
     for a_i, n_i in zip(remainders, moduli):
         N_i = N // n_i
@@ -78,30 +114,58 @@ print("phi(35) =", euler_totient(35))  # Output: 24
         total += a_i * N_i * y_i
     return total % N
 
-# Solve x ≡ 2 (mod 3), x ≡ 3 (mod 5), x ≡ 2 (mod 7)
-print("CRT Solution x =", chinese_remainder_theorem([2, 3, 2], [3, 5, 7]))  # Output: 23
-11. Principles of Modern CryptographyFeatureSymmetric CryptographyAsymmetric (Public-Key) CryptographyKeys UsedSingle shared secret keyMathematically linked Public & Private keysSpeedVery fast (AES, ChaCha20)Slower due to large integer arithmetic (RSA, ECC)Key DistributionRequires secure key exchange channelPublic key can be distributed openlyPrimary Use CaseBulk data encryptionKey exchange, digital signatures, authentication12. The RSA CryptosystemRSA security relies on the computational difficulty of factoring the product of two large primes:Key Generation: Choose distinct primes $p, q$. Compute $n = p \cdot q$ and $\phi(n) = (p-1)(q-1)$. Select $e$ such that $1 < e < \phi(n)$ and $\gcd(e, \phi(n)) = 1$. Compute $d \equiv e^{-1} \pmod{\phi(n)}$.Public Key: $(e, n)$Private Key: $(d, n)$Encryption: $C \equiv M^e \pmod n$Decryption: $M \equiv C^d \pmod n$13. Interactive Python Lab ExperimentsBelow is a complete, end-to-end RSA implementation demonstrating string-to-integer encoding, encryption, and decryption:def rsa_demo():
-    # Step 1: Choose two distinct primes
+# Solve: x ≡ 2 (mod 3), x ≡ 3 (mod 5), x ≡ 2 (mod 7)
+x_sol = chinese_remainder_theorem([2, 3, 2], [3, 5, 7])
+print("CRT Solution x =", x_sol)  # Output: 23
+11. Symmetric vs. Asymmetric Cryptography ArchitectureArchitectural AspectSymmetric CryptographyAsymmetric (Public-Key) CryptographyKey StructureSingle shared secret key ($K$)Mathematically linked key pair ($K_{pub}, K_{priv}$)Computational SpeedVery fast (bit-level operations)Slower (large modular exponentiation)Key DistributionDifficult (requires secure channel)Easy (public key shared openly)Security BasisConfusion & Diffusion (SPN/Feistel)Hard math problems (Integer Factorization, DLP)ExamplesAES-256, ChaCha20, DESRSA, Diffie-Hellman, ECC12. The RSA Cryptosystem (Theory & Diagram)Cryptographic Workflow Diagram+-----------------------------------------------------------------------+
+|                        RSA KEY GENERATION                             |
+|  1. Select distinct large primes: p, q                                |
+|  2. Compute modulus: n = p * q                                        |
+|  3. Compute totient: phi(n) = (p - 1)(q - 1)                          |
+|  4. Choose public exponent e: 1 < e < phi(n), gcd(e, phi(n)) = 1      |
+|  5. Compute private exponent d: d ≡ e^(-1) (mod phi(n))               |
++-----------------------------------------------------------------------+
+             |                                           |
+             v                                           v
+   Public Key: (e, n)                          Private Key: (d, n)
+             |                                           |
+             v                                           v
++-------------------------+                 +---------------------------+
+|      ENCRYPTION         |   Ciphertext    |        DECRYPTION         |
+|   C = M^e (mod n)       | --------------> |     M = C^d (mod n)       |
++-------------------------+                 +---------------------------+
+Mathematical Proof of CorrectnessSince $e \cdot d \equiv 1 \pmod{\phi(n)}$, there exists an integer $k$ such that $ed = 1 + k\phi(n)$. By Euler's Theorem:$$C^d \equiv (M^e)^d \equiv M^{ed} \equiv M^{1 + k\phi(n)} \equiv M \cdot (M^{\phi(n)})^k \equiv M \cdot 1^k \equiv M \pmod n$$13. Complete End-to-End Python Implementationdef rsa_full_pipeline():
+    # 1. Key Generation
     p, q = 61, 53
-    n = p * q                # 3233
-    phi = (p - 1) * (q - 1)  # 3120
-    e = 17                   # Public exponent coprime to 3120
-    d = mod_inverse(e, phi)  # Private exponent: 2753
+    n = p * q                 # n = 3233
+    phi = (p - 1) * (q - 1)   # phi(n) = 3120
+    e = 17                    # coprime to 3120
+    d = mod_inverse(e, phi)   # d = 2753
 
+    print("=== RSA KEY PAIR ===")
     print(f"Public Key  (e, n): ({e}, {n})")
-    print(f"Private Key (d, n): ({d}, {n})")
+    print(f"Private Key (d, n): ({d}, {n})\n")
 
-    # Step 2: Encrypt a message character by character
-    message = "IT23022"
-    ciphertext = [mod_exp(ord(ch), e, n) for ch in message]
-    print("Original Message :", message)
-    print("Encrypted Blocks :", ciphertext)
+    # 2. Encryption (Character-by-character ASCII encoding)
+    plaintext = "Joy Sarker - IT23022"
+    ciphertext = [mod_exp(ord(char), e, n) for char in plaintext]
 
-    # Step 3: Decrypt back to plaintext
-    decrypted = "".join(chr(mod_exp(c, d, n)) for c in ciphertext)
-    print("Decrypted Message:", decrypted)
+    print("=== ENCRYPTION ===")
+    print("Plaintext :", plaintext)
+    print("Ciphertext:", ciphertext, "\n")
 
-rsa_demo()
-14. Step-by-Step Solved ProblemsProblem 1: Modular Inverse
-Find $x$ such that $7x \equiv 1 \pmod{26}$.Apply Extended Euclidean Algorithm: $26 = 3(7) + 5$, $7 = 1(5) + 2$, $5 = 2(2) + 1$.Back-substitute: $1 = 5 - 2(2) = 5 - 2(7 - 5) = 3(5) - 2(7) = 3(26 - 3 \cdot 7) - 2(7) = 3(26) - 11(7)$.Taking modulo $26$: $-11 \equiv 15 \pmod{26}$. Thus, $x = 15$ (Check: $7 \times 15 = 105 = 4 \times 26 + 1$).Problem 2: Small RSA Hand Calculation
-Let $p = 11, q = 13, e = 7$. Encrypt $M = 9$.$n = 11 \times 13 = 143$, and $\phi(n) = 10 \times 12 = 120$.Private key $d \equiv 7^{-1} \pmod{120} \implies d = 103$ since $7 \times 103 = 721 = 6(120) + 1$.Ciphertext: $C = 9^7 \bmod 143 = 48$.Decryption: $M = 48^{103} \bmod 143 = 9$.15. Practical Security ConsiderationsKey Size: Textbook small primes are trivially factored. Production RSA requires at least 2048-bit to 4096-bit moduli.Padding Schemes: Deterministic raw RSA is vulnerable to chosen-ciphertext attacks; real-world deployments must use probabilistic padding such as OAEP (Optimal Asymmetric Encryption Padding).Side-Channel Resistance: Implementations must use constant-time modular exponentiation to prevent timing and power-analysis attacks.16. Summary of Acquired SkillsTranslated formal algebraic properties (divisibility, Bézout's identity, modular congruences) into clean, modular Python functions.Implemented fast binary exponentiation and the Extended Euclidean Algorithm without relying on external libraries.Built and verified a functional asymmetric RSA encryption/decryption pipeline alongside Chinese Remainder Theorem solvers.
+    # 3. Decryption
+    decrypted_chars = [chr(mod_exp(c, d, n)) for c in ciphertext]
+    decrypted_text = "".join(decrypted_chars)
+
+    print("=== DECRYPTION ===")
+    print("Recovered :", decrypted_text)
+    assert plaintext == decrypted_text, "Decryption mismatch!"
+
+if __name__ == "__main__":
+    rsa_full_pipeline()
+14. Step-by-Step Solved Numerical ProblemsProblem 1: Modular Multiplicative InverseFind $x$ such that $7x \equiv 1 \pmod{26}$.Apply Euclidean Algorithm:$26 = 3 \times 7 + 5$$7 = 1 \times 5 + 2$$5 = 2 \times 2 + 1$Back-substitute to express $1$ as a linear combination of $7$ and $26$:$1 = 5 - 2(2)$$1 = 5 - 2(7 - 5) = 3(5) - 2(7)$$1 = 3(26 - 3 \times 7) - 2(7) = 3(26) - 11(7)$Reduce modulo $26$:$-11 \equiv 15 \pmod{26} \implies \mathbf{x = 15}$.Verification: $7 \times 15 = 105 = 4(26) + 1 \equiv 1 \pmod{26}$.Problem 2: Hand-Worked RSA Encryption & DecryptionGiven $p = 11, q = 13, e = 7$, encrypt message $M = 9$ and decrypt it back.Compute $n$ and $\phi(n)$:
+$$n = 11 \times 13 = 143, \quad \phi(143) = (11 - 1)(13 - 1) = 120$$Find Private Key $d$:
+$$7d \equiv 1 \pmod{120} \implies d = 103 \quad (\text{since } 7 \times 103 = 721 = 6 \times 120 + 1)$$Encrypt $M = 9$:
+$$C = 9^7 \bmod 143 = 4,782,969 \bmod 143 = \mathbf{48}$$Decrypt $C = 48$:
+$$M = 48^{103} \bmod 143 = \mathbf{9}$$15. Practical Security ConsiderationsKey Length Requirements: Small primes used for educational demonstration can be factored instantaneously. Modern standards (NIST) mandate a minimum key size of 2048 bits (or 3072/4096 bits for long-term security).Probabilistic Padding (OAEP): Raw ("textbook") RSA is deterministic—encrypting the same message twice yields identical ciphertexts. Production RSA always applies OAEP (Optimal Asymmetric Encryption Padding) to prevent chosen-ciphertext attacks.Side-Channel Mitigations: Cryptographic libraries implement constant-time modular exponentiation (e.g., Montgomery Ladder) to prevent timing and power-analysis attacks.16. References & SummaryWorkshop Reference: mnp-club/Number_Theory_and_Cryptography_WorkshopTextbook Reference: William Stallings, Cryptography and Network Security: Principles and Practice.Summary: Through this lab assignment, foundational number-theoretic concepts—divisibility, Euclidean GCD, modular inverses, Euler's theorem, CRT, and RSA—were analytically derived and computationally verified in Python.
